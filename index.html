@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إنقاذ الفتاة</title>
+    <title>إنقاذ الفتاة - زاوية 108</title>
     <link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@400;600;800&family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -677,6 +677,7 @@
             animation: fadeIn 0.5s ease-in-out;
             border-right: 5px solid #ffeeba;
         }
+
     </style>
 </head>
 <body>
@@ -708,20 +709,24 @@
 
     <div id="rotate-reminder">📱 يُرجى تدوير الهاتف بالعرض لتجربة أفضل</div>
 
+
+
     <div id="game-wrapper">
         <img src="sky.png" class="layer" id="sky" alt="Sky">
         <img src="clouds.png" class="layer" id="clouds" alt="Clouds">
         <img src="grass.png" class="layer" id="grass" alt="Grass">
-        <img src="tower.png" class="layer" id="tower" alt="Tower">
+        <img src="girl and tower.webp" class="layer" id="tower" alt="Tower">
         
         <img src="ladder.png" id="ladder" alt="Ladder">
 
-        <img src="characters.png" class="layer" id="characters" alt="Characters">
+        <img src="character.webp" class="layer" id="characters" alt="Characters">
 
         <svg id="svg-layer">
             <path id="triangle" class="triangle-path" d="" />
             <path id="arc" class="angle-arc" d="" />
+            <path id="arc2" class="angle-arc" d="" />
             <text id="angle-val" class="angle-text" x="0" y="0">108°</text>
+            <text id="angle-val2" class="angle-text" x="0" y="0">20°</text>
             <text id="side-val" class="side-text" x="0" y="0">10 ft</text>
         </svg>
 
@@ -753,23 +758,29 @@
         // ==========================================
 
         const ASSETS_POS = {
-            towerLeft: 1.5,
-            charactersLeft: 51
+            towerLeft: -7,
+            towerTop: 13.5,
+            towerWidth: 'auto',
+            towerHeight: 87.5,
+            charactersLeft: 34.5,
+            charactersTop: 56,
+            charactersWidth: 'auto',
+            charactersHeight: 47
         };
         
         // إعدادات السلم عند التثبيت
         const LADDER_SNAP = {
-            left: 29,        // المسافة من اليسار
-            top: 27.5,       // المسافة من الأعلى
-            width: 34.5,     // العرض
-            rotation: 2      // زاوية الدوران
+            left: 31.5,
+            top: 44.5,
+            width: 25,
+            rotation: 0.5
         };
 
         // إحداثيات رؤوس المثلث
         const TRIANGLE_POINTS = {
-            p1: { x: 37, y: 87.5 },  // قاعدة البرج
-            p2: { x: 32, y: 38.5 },  // يد الفتاة (أعلى السلم)
-            p3: { x: 58.5, y: 88 }   // يد الأطفال
+            p1: { x: 37, y: 87.5 },
+            p2: { x: 33, y: 52 },
+            p3: { x: 53, y: 88 }
         };
 
         // ==========================================
@@ -781,14 +792,23 @@
         const modal = document.getElementById('quiz-modal');
         const triangle = document.getElementById('triangle');
         const arc = document.getElementById('arc');
+        const arc2 = document.getElementById('arc2');
         const angleVal = document.getElementById('angle-val');
+        const angleVal2 = document.getElementById('angle-val2');
         const sideVal = document.getElementById('side-val');
 
         const tower = document.getElementById('tower');
         const characters = document.getElementById('characters');
         
-        tower.style.left = `${ASSETS_POS.towerLeft}%`;
-        characters.style.left = `${ASSETS_POS.charactersLeft}%`;
+        tower.style.left = ASSETS_POS.towerLeft + '%';
+        tower.style.top = ASSETS_POS.towerTop + '%';
+        tower.style.width = ASSETS_POS.towerWidth === 'auto' ? 'auto' : ASSETS_POS.towerWidth + '%';
+        tower.style.height = ASSETS_POS.towerHeight + '%';
+
+        characters.style.left = ASSETS_POS.charactersLeft + '%';
+        characters.style.top = ASSETS_POS.charactersTop + '%';
+        characters.style.width = ASSETS_POS.charactersWidth === 'auto' ? 'auto' : ASSETS_POS.charactersWidth + '%';
+        characters.style.height = ASSETS_POS.charactersHeight + '%';
 
         // Voice audio
         const helpAudio = new Audio('ساعدوني.wav');
@@ -987,6 +1007,30 @@
             angleVal.setAttribute('dominant-baseline', 'middle');
             angleVal.classList.add('show-svg');
 
+            // Draw Arc at P2 (20 degrees)
+            const angle2_1 = Math.atan2(p1.y - p2.y, p1.x - p2.x);
+            const angle2_2 = Math.atan2(p3.y - p2.y, p3.x - p2.x);
+            
+            const startX2 = p2.x + radius * Math.cos(angle2_1);
+            const startY2 = p2.y + radius * Math.sin(angle2_1);
+            const endX2 = p2.x + radius * Math.cos(angle2_2);
+            const endY2 = p2.y + radius * Math.sin(angle2_2);
+            
+            const crossProduct2 = (p1.x - p2.x)*(p3.y - p2.y) - (p1.y - p2.y)*(p3.x - p2.x);
+            const sweep2 = crossProduct2 > 0 ? 1 : 0;
+            
+            arc2.setAttribute('d', `M ${p2.x} ${p2.y} L ${startX2} ${startY2} A ${radius} ${radius} 0 0 ${sweep2} ${endX2} ${endY2} Z`);
+            arc2.classList.add('show-svg');
+            
+            let midAngle2 = (angle2_1 + angle2_2) / 2;
+            if (Math.abs(angle2_1 - angle2_2) > Math.PI) midAngle2 += Math.PI;
+            
+            angleVal2.setAttribute('x', p2.x + textRadius * Math.cos(midAngle2));
+            angleVal2.setAttribute('y', p2.y + textRadius * Math.sin(midAngle2));
+            angleVal2.setAttribute('text-anchor', 'middle');
+            angleVal2.setAttribute('dominant-baseline', 'middle');
+            angleVal2.classList.add('show-svg');
+
             // Side "10 ft" Text
             sideVal.setAttribute('x', (p1.x + p3.x) / 2);
             sideVal.setAttribute('y', (p1.y + p3.y) / 2 + (h * 0.04)); // Dynamic text drop
@@ -999,11 +1043,17 @@
         });
 
         // Modal Handling
+        let quizStarted = false;
+
         exploreBtn.addEventListener('click', () => {
             modal.classList.add('active');
             playSnapSound();
-            currentQuestion = 0;
-            renderQuestion();
+            if (!quizStarted) {
+                quizStarted = true;
+                currentQuestion = 0;
+                exploreBtn.innerText = 'العودة للأسئلة 📝';
+                renderQuestion();
+            }
         });
 
         function hideModal() {
@@ -1011,11 +1061,6 @@
         }
 
         const quizData = [
-            {
-                question: "كيف تمكنتِ من إنقاذ الفتاة هندسياً؟",
-                keywords: ["سلم", "مثلث", "مائل", "تحريك", "ربط", "الأرض", "البرج", "شكل", "وضع"],
-                explanation: "لقد استخدمتِ السلم كضلع ثالث لربط قمة البرج بالأرض، مما شكل مثلثاً هندسياً يتيح لنا حساب المسافات بدقة."
-            },
             {
                 question: "هل يمكننا استخدام نظرية فيثاغورس لمعرفة طول السلم هنا؟ ولماذا؟",
                 keywords: ["لا", "ليس قائم", "زاوية", "منفرج", "108", "فيثاغورس"],
@@ -1028,8 +1073,13 @@
             },
             {
                 question: "إذاً، ما هو القانون الرياضي السحري لحل هذا المثلث المنفرج؟",
-                keywords: ["جيوب", "التمام", "cosines", "cos", "جتا"],
-                explanation: "ممتاز! قانون جيوب التمام (Law of Cosines) هو التعميم الأقوى لفيثاغورس، ويسمح لنا بإيجاد الضلع المجهول في أي مثلث مهما كانت زاويته!"
+                keywords: ["جيوب", "sines", "sin", "جا"],
+                explanation: "ممتاز! قانون الجيوب (Law of Sines) هو الأنسب هنا، ويسمح لنا بإيجاد الضلع المجهول باستخدام الزوايا المتقابلة!"
+            },
+            {
+                question: "أوجدي طول السلم باستخدام قانون الجيوب:",
+                keywords: ["27.8", "27,8", "٢٧.٨", "٢٧،٨"],
+                explanation: "باستخدام قانون الجيوب: (طول السلم) / sin(108) = 10 / sin(20). ومنه طول السلم = 27.8 ft تقريباً!"
             }
         ];
 
@@ -1049,7 +1099,10 @@
                     
                     <textarea id="student-text-answer" class="student-answer" placeholder="اكتبي إجابتك هنا بأسلوبك..."></textarea>
                     
-                    <button id="check-ans-btn" class="check-btn" onclick="checkKeywordAnswer()">تحقق من الإجابة ✔️</button>
+                    <div style="display: flex; gap: 10px; margin-top: 15px;">
+                        <button id="check-ans-btn" class="check-btn" style="margin-top: 0;" onclick="checkKeywordAnswer()">تحقق من الإجابة ✔️</button>
+                        <button class="check-btn" style="margin-top: 0; background: var(--dark);" onclick="hideModal()">الرجوع للمشهد 👁️</button>
+                    </div>
                     
                     <div class="explanation" id="current-explanation" style="display: none; padding: 15px; margin-top: 15px;">
                         <p id="correction-status" style="font-size: 1.1rem; font-weight: bold; margin-bottom: 10px;"></p>
@@ -1140,15 +1193,15 @@
             if(audioCtx.state === 'suspended') audioCtx.resume();
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
-            osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(300, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.3);
-            gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+            osc.frequency.setValueAtTime(392, audioCtx.currentTime + 0.15);
+            gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.4);
             osc.connect(gain);
             gain.connect(audioCtx.destination);
             osc.start();
-            osc.stop(audioCtx.currentTime + 0.3);
+            osc.stop(audioCtx.currentTime + 0.4);
         }
 
         function createConfetti() {
