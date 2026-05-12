@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إنقاذ الفتاة - زاوية 108</title>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@400;600;800&family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #FF6B6B;
+            --secondary: #4ECDC4;
+            --accent: #FFE66D;
+            --dark: #2C3E50;
+            --light: #F7F9F9;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, #87CEEB 0%, #87CEEB 60%, #60a921 60%, #60a921 100%);
+            font-family: 'Cairo', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        #game-wrapper {
+            position: relative;
+            /* Magic formula for perfectly responsive 16:9 container */
+            width: 100vw;
+            height: 56.25vw;
+            max-width: 177.78vh;
+            max-height: 100vh;
+            background: #87CEEB;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            overflow: hidden;
+            container-type: inline-size;
+        }
+
+        .layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        #sky { object-fit: cover; }
+        #clouds, #grass { object-fit: contain; }
+        
+        #tower { 
+            position: absolute;
+            top: 0;
+            height: 100%;
+            width: auto;
+            z-index: 10; 
+        }
+        #characters { 
+            position: absolute;
+            top: 0;
+            height: 100%;
+            width: auto;
+            z-index: 20; 
+            pointer-events: none; 
+            animation: panicBounce 1s infinite alternate ease-in-out;
+            transform-origin: bottom center;
+        }
+
+        @keyframes panicBounce {
+            0% { transform: translateY(0) scaleY(1); }
+            100% { transform: translateY(-1.5%) scaleY(0.98); }
+        }
+
+        /* Clouds Animation */
+        #clouds {
+            animation: floatClouds 20s linear infinite;
+        }
+        @keyframes floatClouds {
+            from { transform: translateX(5%); }
+            to { transform: translateX(-5%); }
+        }
+
+        #ladder {
+            position: absolute;
+            top: 50%; 
+            left: 55%; 
+            width: 35%; 
+            cursor: grab;
+            touch-action: none;
+            filter: drop-shadow(5px 5px 10px rgba(0,0,0,0.4));
+            pointer-events: auto;
+            z-index: 15;
+            transform: rotate(-5deg);
+        }
+
+        #ladder:active {
+            cursor: grabbing;
+        }
+
+        .snapped {
+            transition: all 0.5s ease-in-out !important;
+            cursor: default !important;
+            pointer-events: none !important;
+        }
+
+        #svg-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 30;
+        }
+
+        .triangle-path {
+            fill: rgba(255, 230, 109, 0.4);
+            stroke: #FFE66D;
+            stroke-width: 4;
+            stroke-dasharray: 10, 10;
+            animation: dash 2s linear infinite, glow 1.5s ease-in-out infinite alternate;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+
+        .angle-arc {
+            fill: rgba(255, 107, 107, 0.5);
+            stroke: #FF6B6B;
+            stroke-width: 4;
+            opacity: 0;
+            transition: opacity 1s ease-in-out 0.5s;
+        }
+
+        .angle-text, .side-text {
+            font-family: 'Baloo Bhaijaan 2', cursive;
+            font-weight: 800;
+            opacity: 0;
+            transition: opacity 1s ease-in-out 0.5s;
+        }
+        .angle-text {
+            font-size: clamp(10px, 3cqw, 28px);
+            fill: #FF6B6B;
+            text-shadow: 2px 2px 4px rgba(255,255,255,1);
+        }
+        .side-text {
+            font-size: clamp(9px, 2.5cqw, 24px);
+            fill: #ffffff;
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.8));
+        }
+        .show-svg {
+            opacity: 1 !important;
+        }
+
+        @keyframes dash {
+            to { stroke-dashoffset: -20; }
+        }
+
+        @keyframes glow {
+            from { filter: drop-shadow(0 0 5px rgba(255, 230, 109, 0.8)); }
+            to { filter: drop-shadow(0 0 15px rgba(255, 230, 109, 1)); }
+        }
+
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 20;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+
+
+        #instruction {
+            margin-top: 3cqh;
+            background: var(--primary);
+            color: white;
+            padding: clamp(4px, 1cqw, 10px) clamp(8px, 2cqw, 20px);
+            border-radius: 30px;
+            font-size: clamp(8px, 2.5cqw, 18px);
+            font-weight: bold;
+            animation: pulse 2s infinite;
+            pointer-events: auto;
+            transition: opacity 0.5s;
+            max-width: 90%;
+            text-align: center;
+            box-sizing: border-box;
+            word-wrap: break-word;
+            line-height: 1.4;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.7); }
+            50% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(255, 107, 107, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 107, 107, 0); }
+        }
+
+        #explore-btn {
+            position: absolute;
+            bottom: 6%;
+            right: 5%;
+            background: linear-gradient(135deg, var(--secondary), #2EAFA4);
+            color: white;
+            border: none;
+            padding: clamp(6px, 1.5cqw, 12px) clamp(15px, 3cqw, 35px);
+            font-size: clamp(0.75rem, 2.5cqw, 1.5rem);
+            font-family: 'Baloo Bhaijaan 2', cursive;
+            font-weight: 800;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(78, 205, 196, 0.4);
+            transition: all 0.3s;
+            opacity: 0;
+            transform: translateY(50px);
+            pointer-events: none;
+            max-width: 90%;
+            text-align: center;
+            box-sizing: border-box;
+            word-wrap: break-word;
+            line-height: 1.3;
+        }
+
+        #explore-btn.visible {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+            animation: bounceIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        #explore-btn:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 15px 25px rgba(78, 205, 196, 0.6);
+        }
+
+        @keyframes bounceIn {
+            0% { opacity: 0; transform: translateY(50px) scale(0.3); }
+            50% { opacity: 1; transform: translateY(-10px) scale(1.05); }
+            70% { transform: translateY(5px) scale(0.95); }
+            100% { transform: translateY(0) scale(1); }
+        }
+
+        /* Modal Styles */
+        #quiz-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(44, 62, 80, 0.85);
+            backdrop-filter: blur(8px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s;
+            z-index: 3000;
+        }
+
+        #quiz-modal.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background: white;
+            width: 95%;
+            max-width: 650px;
+            border-radius: 20px;
+            padding: clamp(20px, 5vw, 40px);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            transform: scale(0.8);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            border: 5px solid var(--secondary);
+            max-height: 90vh;
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+
+        #quiz-modal.active .modal-content {
+            transform: scale(1);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: clamp(35px, 8vw, 45px);
+            height: clamp(35px, 8vw, 45px);
+            border-radius: 50%;
+            font-size: clamp(1.2rem, 4vw, 1.8rem);
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
+            z-index: 10;
+        }
+
+        .close-btn:hover {
+            background: #e74c3c;
+            transform: scale(1.1) rotate(90deg);
+        }
+
+        .question-card {
+            background: var(--light);
+            padding: 20px 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            border-right: 6px solid var(--primary);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transform: translateX(50px);
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .question-card.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .question-card:nth-child(1) { border-color: #FF6B6B; transition-delay: 0.1s; }
+        .question-card:nth-child(2) { border-color: #4ECDC4; transition-delay: 0.2s; }
+        .question-card:nth-child(3) { border-color: #FFE66D; transition-delay: 0.3s; }
+        .question-card:nth-child(4) { border-color: #9B59B6; transition-delay: 0.4s; }
+
+        .question-text {
+            font-size: clamp(1rem, 3.5vw, 1.3rem);
+            color: var(--dark);
+            margin: 0;
+            font-weight: 700;
+            line-height: 1.5;
+        }
+
+        .modal-title {
+            text-align: center;
+            font-family: 'Baloo Bhaijaan 2', cursive;
+            font-size: clamp(1.8rem, 6vw, 2.8rem);
+            color: var(--dark);
+            margin-top: 20px;
+            margin-bottom: clamp(15px, 4vw, 30px);
+            text-shadow: 2px 2px 0px rgba(0,0,0,0.05);
+            line-height: 1.3;
+        }
+        
+        .view-scene-btn {
+            display: block;
+            margin: 20px auto 0;
+            background: transparent;
+            color: var(--secondary);
+            border: 3px solid var(--secondary);
+            padding: clamp(8px, 2vw, 12px) clamp(20px, 4vw, 30px);
+            border-radius: 50px;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 800;
+            font-size: clamp(1rem, 4vw, 1.2rem);
+            cursor: pointer;
+            transition: all 0.3s;
+            max-width: 100%;
+            text-align: center;
+            word-wrap: break-word;
+        }
+        
+        .view-scene-btn:hover {
+            background: var(--secondary);
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(78, 205, 196, 0.4);
+        }
+
+        /* Success Confetti */
+        .confetti {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background-color: #f00;
+            z-index: 100;
+            animation: fall 4s linear forwards;
+            pointer-events: none;
+            border-radius: 2px;
+        }
+
+        @keyframes fall {
+            0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+
+        #rotate-reminder {
+            display: none;
+            position: absolute;
+            top: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            z-index: 100;
+            white-space: nowrap;
+        }
+
+        @media screen and (max-width: 768px) and (orientation: portrait) {
+            #rotate-reminder {
+                display: block;
+            }
+        }
+
+        /* Start Screen & Idea Modal */
+        #start-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
+            z-index: 2000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            transition: opacity 0.5s;
+            overflow: hidden;
+        }
+
+        .floating-icon {
+            position: absolute;
+            font-size: clamp(3rem, 8vw, 5rem);
+            opacity: 0.5;
+            animation: floatIcon 4s ease-in-out infinite alternate;
+        }
+
+        @keyframes floatIcon {
+            0% { transform: translateY(0) rotate(0deg); }
+            100% { transform: translateY(-20px) rotate(15deg); }
+        }
+
+        .start-content {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(15px);
+            padding: clamp(20px, 5vw, 40px);
+            border-radius: 30px;
+            border: 4px solid white;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            width: 90%;
+            max-width: 450px;
+            box-sizing: border-box;
+            z-index: 10;
+        }
+
+        .start-title {
+            font-family: 'Baloo Bhaijaan 2', cursive;
+            font-size: clamp(2.5rem, 10vw, 4rem);
+            color: #FF6B6B;
+            margin: 0 0 10px 0;
+            text-shadow: 2px 2px 0px white, 4px 4px 0px rgba(0,0,0,0.1);
+            animation: bounceIn 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .start-subtitle {
+            color: #2C3E50; 
+            font-weight: 800; 
+            font-size: clamp(1rem, 4vw, 1.2rem);
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        .start-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .primary-btn, .secondary-btn {
+            font-family: 'Cairo', sans-serif;
+            font-weight: 800;
+            font-size: clamp(1.1rem, 4vw, 1.4rem);
+            padding: 12px 30px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .primary-btn {
+            background: linear-gradient(135deg, var(--primary), #ff4757);
+            color: white;
+            box-shadow: 0 10px 20px rgba(255, 107, 107, 0.4);
+        }
+        
+        .primary-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 25px rgba(255, 107, 107, 0.6);
+        }
+
+        .secondary-btn {
+            background: transparent;
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .secondary-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: white;
+        }
+
+        .idea-text {
+            font-size: clamp(1rem, 4vw, 1.2rem);
+            color: var(--dark);
+            line-height: 1.8;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        #idea-modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 2500;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s;
+        }
+        
+        #idea-modal.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .quiz-content {
+            background: linear-gradient(135deg, #ffffff, #f0f4f8);
+            border: 6px solid var(--secondary);
+            border-radius: 20px;
+            overflow: hidden;
+            padding: 20px 15px;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        .quiz-progress-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 10px;
+            background: #e0e0e0;
+            z-index: 5;
+        }
+
+        .quiz-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--secondary), var(--primary));
+            width: 0%;
+            transition: width 0.5s ease-in-out;
+        }
+
+        #quiz-container {
+            max-height: calc(85vh - 40px);
+            overflow-y: auto;
+            padding: 5px;
+            margin-top: 15px;
+        }
+
+        .q-badge {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 10px rgba(255, 107, 107, 0.4);
+        }
+
+        .student-answer {
+            width: 100%;
+            height: 100px;
+            margin-top: 10px;
+            padding: 15px;
+            border-radius: 15px;
+            border: 2px solid #ccc;
+            font-family: 'Cairo', sans-serif;
+            font-size: clamp(0.9rem, 3vw, 1.1rem);
+            resize: none;
+            box-sizing: border-box;
+            background: #fdfdfd;
+            transition: all 0.3s;
+        }
+
+        .student-answer:focus {
+            border-color: var(--secondary);
+            outline: none;
+            box-shadow: 0 0 10px rgba(78, 205, 196, 0.3);
+            background: white;
+        }
+
+        .check-btn {
+            background: linear-gradient(135deg, var(--secondary), #2EAFA4);
+            color: white;
+            border: none;
+            padding: 10px 30px;
+            border-radius: 50px;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 800;
+            font-size: clamp(1rem, 3.5vw, 1.2rem);
+            cursor: pointer;
+            margin-top: 15px;
+            width: 100%;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(78, 205, 196, 0.4);
+        }
+
+        .check-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(78, 205, 196, 0.6);
+        }
+
+        .final-screen {
+            text-align: center;
+            animation: fadeIn 0.5s;
+        }
+
+        .final-icon {
+            font-size: 5rem;
+            margin: 20px 0;
+            animation: bounceIn 1s;
+        }
+
+        .final-text {
+            font-size: 1.4rem;
+            color: var(--dark);
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-10px); }
+            40%, 80% { transform: translateX(10px); }
+        }
+        
+        .explanation {
+            background: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-top: 15px;
+            animation: fadeIn 0.5s ease-in-out;
+            border-right: 5px solid #ffeeba;
+        }
+    </style>
+</head>
+<body>
+    <div id="start-screen">
+        <div class="floating-icon" style="top:10%; left:10%; animation-delay: 0s;">📐</div>
+        <div class="floating-icon" style="top:20%; right:15%; animation-delay: 1s;">✏️</div>
+        <div class="floating-icon" style="bottom:15%; left:20%; animation-delay: 2s;">📏</div>
+        <div class="floating-icon" style="bottom:25%; right:10%; animation-delay: 3s;">🧠</div>
+        <div class="start-content">
+            <h1 class="start-title">إنقاذ الفتاة</h1>
+            <p class="start-subtitle">استخدمي ذكاءكِ الهندسي في مهمة الإنقاذ!</p>
+            <div class="start-buttons">
+                <button id="start-btn" class="primary-btn">ابدأ اللعبة 🎮</button>
+                <button id="idea-btn" class="secondary-btn" style="color:var(--primary); border-color:var(--primary);">فكرة اللعبة 💡</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="idea-modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="hideIdeaModal()">×</button>
+            <h2 class="modal-title">فكرة اللعبة 💡</h2>
+            <p class="idea-text">
+                في هذه اللعبة، صديقتنا عالقة في أعلى برج بيزا المائل! هدفك هو مساعدتها عن طريق وضع السلم في المكان الصحيح.<br><br>
+                بمجرد إنقاذها، تأملي الشكل الهندسي الناتج، وفكري: ما نوع هذا المثلث؟ وكيف يمكننا إيجاد أطواله وزواياه رياضياً؟
+            </p>
+        </div>
+    </div>
+
+    <div id="rotate-reminder">📱 يُرجى تدوير الهاتف بالعرض لتجربة أفضل</div>
+
+    <div id="game-wrapper">
+        <img src="sky.png" class="layer" id="sky" alt="Sky">
+        <img src="clouds.png" class="layer" id="clouds" alt="Clouds">
+        <img src="grass.png" class="layer" id="grass" alt="Grass">
+        <img src="tower.png" class="layer" id="tower" alt="Tower">
+        
+        <img src="ladder.png" id="ladder" alt="Ladder">
+
+        <img src="characters.png" class="layer" id="characters" alt="Characters">
+
+        <svg id="svg-layer">
+            <path id="triangle" class="triangle-path" d="" />
+            <path id="arc" class="angle-arc" d="" />
+            <text id="angle-val" class="angle-text" x="0" y="0">108°</text>
+            <text id="side-val" class="side-text" x="0" y="0">10 ft</text>
+        </svg>
+
+        <div id="ui-layer">
+            <div id="instruction">اسحبي السلم نحو الفتاة لمساعدتها! 👇</div>
+            <button id="explore-btn">استكشف الموقف 🔍</button>
+        </div>
+    </div>
+
+    <div id="quiz-modal">
+        <div class="modal-content quiz-content">
+            <button class="close-btn" onclick="hideModal()">×</button>
+            
+            <div class="quiz-progress-container">
+                <div class="quiz-progress-bar" id="quiz-progress"></div>
+            </div>
+
+            <div id="quiz-container">
+                <!-- Injected via JS -->
+            </div>
+        </div>
+    </div>
+
+
+
+    <script>
+        // ==========================================
+        // إعدادات مواقع المثلث والسلم (نسب مئوية %)
+        // ==========================================
+
+        const ASSETS_POS = {
+            towerLeft: 1.5,
+            charactersLeft: 51
+        };
+        
+        // إعدادات السلم عند التثبيت
+        const LADDER_SNAP = {
+            left: 29,        // المسافة من اليسار
+            top: 27.5,       // المسافة من الأعلى
+            width: 34.5,     // العرض
+            rotation: 2      // زاوية الدوران
+        };
+
+        // إحداثيات رؤوس المثلث
+        const TRIANGLE_POINTS = {
+            p1: { x: 37, y: 87.5 },  // قاعدة البرج
+            p2: { x: 32, y: 38.5 },  // يد الفتاة (أعلى السلم)
+            p3: { x: 58.5, y: 88 }   // يد الأطفال
+        };
+
+        // ==========================================
+
+        const ladder = document.getElementById('ladder');
+        const wrapper = document.getElementById('game-wrapper');
+        const instruction = document.getElementById('instruction');
+        const exploreBtn = document.getElementById('explore-btn');
+        const modal = document.getElementById('quiz-modal');
+        const triangle = document.getElementById('triangle');
+        const arc = document.getElementById('arc');
+        const angleVal = document.getElementById('angle-val');
+        const sideVal = document.getElementById('side-val');
+
+        const tower = document.getElementById('tower');
+        const characters = document.getElementById('characters');
+        
+        tower.style.left = `${ASSETS_POS.towerLeft}%`;
+        characters.style.left = `${ASSETS_POS.charactersLeft}%`;
+
+        // Voice audio
+        const helpAudio = new Audio('ساعدوني.wav');
+        let voicePlayed = false;
+
+        function playVoiceOnce() {
+            if (!voicePlayed) {
+                helpAudio.play().catch(e => console.log('Audio autoplay blocked'));
+                voicePlayed = true;
+            }
+        }
+
+        const startScreen = document.getElementById('start-screen');
+        const startBtn = document.getElementById('start-btn');
+        const ideaBtn = document.getElementById('idea-btn');
+        const ideaModal = document.getElementById('idea-modal');
+
+        startBtn.addEventListener('click', () => {
+            startScreen.style.opacity = '0';
+            setTimeout(() => {
+                startScreen.style.display = 'none';
+                playVoiceOnce();
+            }, 500);
+        });
+
+        ideaBtn.addEventListener('click', () => {
+            ideaModal.classList.add('active');
+        });
+
+        function hideIdeaModal() {
+            ideaModal.classList.remove('active');
+        }
+        
+        // Sound synthesis
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playSnapSound() {
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1);
+            gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.2);
+        }
+
+        function playSuccessSound() {
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+            osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); // E5
+            osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2); // G5
+            osc.frequency.setValueAtTime(1046.50, audioCtx.currentTime + 0.3); // C6
+            gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.6);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.6);
+        }
+
+        let isDragging = false;
+        let dragOffsetX, dragOffsetY;
+        let isSnapped = false;
+
+        // Interaction Listeners
+        ladder.addEventListener('mousedown', dragStart);
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('mouseup', dragEnd);
+        
+        ladder.addEventListener('touchstart', dragStart, {passive: false});
+        document.addEventListener('touchmove', drag, {passive: false});
+        document.addEventListener('touchend', dragEnd);
+
+        function dragStart(e) {
+            if (isSnapped) return;
+            const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
+            const clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
+            
+            const ladderRect = ladder.getBoundingClientRect();
+            dragOffsetX = clientX - ladderRect.left;
+            dragOffsetY = clientY - ladderRect.top;
+            
+            isDragging = true;
+            ladder.style.transition = 'none';
+            ladder.style.transform = `rotate(-10deg) scale(1.05)`;
+        }
+
+        function drag(e) {
+            if (!isDragging) return;
+            e.preventDefault();
+            const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
+            const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+
+            const wrapperRect = wrapper.getBoundingClientRect();
+            
+            let newLeft = ((clientX - dragOffsetX - wrapperRect.left) / wrapperRect.width) * 100;
+            let newTop = ((clientY - dragOffsetY - wrapperRect.top) / wrapperRect.height) * 100;
+            
+            ladder.style.left = `${newLeft}%`;
+            ladder.style.top = `${newTop}%`;
+        }
+
+        function dragEnd() {
+            if (!isDragging) return;
+            isDragging = false;
+            
+            // Restore transition for smooth snapping or reverting
+            ladder.style.transition = 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+
+            const currentLeft = parseFloat(ladder.style.left);
+            
+            // Check if dragged towards the left side (where tower is)
+            if (currentLeft < 45) {
+                snapLadder();
+            } else {
+                // Revert smoothly
+                ladder.style.left = '55%';
+                ladder.style.top = '50%';
+                ladder.style.transform = `rotate(-5deg) scale(1)`;
+            }
+        }
+
+        function snapLadder() {
+            isSnapped = true;
+            playSnapSound();
+            
+            // Apply exact placement based on our settings
+            ladder.style.transform = `rotate(${LADDER_SNAP.rotation}deg) scale(1)`;
+            ladder.style.left = `${LADDER_SNAP.left}%`;
+            ladder.style.top = `${LADDER_SNAP.top}%`;
+            ladder.style.width = `${LADDER_SNAP.width}%`;
+            ladder.classList.add('snapped');
+
+            instruction.style.opacity = '0';
+            characters.style.animation = 'none';
+            
+            setTimeout(() => {
+                drawTriangle();
+                playSuccessSound();
+                createConfetti();
+                
+                setTimeout(() => {
+                    exploreBtn.classList.add('visible');
+                }, 2500);
+            }, 600);
+        }
+
+        function drawTriangle() {
+            const w = wrapper.clientWidth;
+            const h = wrapper.clientHeight;
+            
+            const p1 = { x: (TRIANGLE_POINTS.p1.x / 100) * w, y: (TRIANGLE_POINTS.p1.y / 100) * h };
+            const p2 = { x: (TRIANGLE_POINTS.p2.x / 100) * w, y: (TRIANGLE_POINTS.p2.y / 100) * h };
+            const p3 = { x: (TRIANGLE_POINTS.p3.x / 100) * w, y: (TRIANGLE_POINTS.p3.y / 100) * h };
+
+            triangle.setAttribute('d', `M ${p1.x} ${p1.y} L ${p2.x} ${p2.y} L ${p3.x} ${p3.y} Z`);
+            triangle.classList.add('show-svg');
+
+            // Draw Arc at P1 (108 degrees)
+            const radius = w * 0.045; // Dynamic radius based on width
+            
+            // Calculate angles
+            const angle1 = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+            const angle2 = Math.atan2(p3.y - p1.y, p3.x - p1.x);
+            
+            const startX = p1.x + radius * Math.cos(angle1);
+            const startY = p1.y + radius * Math.sin(angle1);
+            const endX = p1.x + radius * Math.cos(angle2);
+            const endY = p1.y + radius * Math.sin(angle2);
+            
+            // Drawing a wedge: M p1 L start A radius sweep end Z
+            const crossProduct = (p2.x - p1.x)*(p3.y - p1.y) - (p2.y - p1.y)*(p3.x - p1.x);
+            const sweep = crossProduct > 0 ? 1 : 0;
+            
+            arc.setAttribute('d', `M ${p1.x} ${p1.y} L ${startX} ${startY} A ${radius} ${radius} 0 0 ${sweep} ${endX} ${endY} Z`);
+            arc.classList.add('show-svg');
+            
+            // Text position (bisecting the angle)
+            let diff = angle2 - angle1;
+            if (diff < 0) diff += 2 * Math.PI;
+            
+            let midAngle = angle1 + diff / 2;
+            const textRadius = radius + (w * 0.025); // Dynamic text position
+            
+            angleVal.setAttribute('x', p1.x + textRadius * Math.cos(midAngle));
+            angleVal.setAttribute('y', p1.y + textRadius * Math.sin(midAngle));
+            angleVal.setAttribute('text-anchor', 'middle');
+            angleVal.setAttribute('dominant-baseline', 'middle');
+            angleVal.classList.add('show-svg');
+
+            // Side "10 ft" Text
+            sideVal.setAttribute('x', (p1.x + p3.x) / 2);
+            sideVal.setAttribute('y', (p1.y + p3.y) / 2 + (h * 0.04)); // Dynamic text drop
+            sideVal.setAttribute('text-anchor', 'middle');
+            sideVal.classList.add('show-svg');
+        }
+
+        window.addEventListener('resize', () => {
+            if (isSnapped) drawTriangle();
+        });
+
+        // Modal Handling
+        exploreBtn.addEventListener('click', () => {
+            modal.classList.add('active');
+            playSnapSound();
+            currentQuestion = 0;
+            renderQuestion();
+        });
+
+        function hideModal() {
+            modal.classList.remove('active');
+        }
+
+        const quizData = [
+            {
+                question: "كيف تمكنتِ من إنقاذ الفتاة هندسياً؟",
+                keywords: ["سلم", "مثلث", "مائل", "تحريك", "ربط", "الأرض", "البرج", "شكل", "وضع"],
+                explanation: "لقد استخدمتِ السلم كضلع ثالث لربط قمة البرج بالأرض، مما شكل مثلثاً هندسياً يتيح لنا حساب المسافات بدقة."
+            },
+            {
+                question: "هل يمكننا استخدام نظرية فيثاغورس لمعرفة طول السلم هنا؟ ولماذا؟",
+                keywords: ["لا", "ليس قائم", "زاوية", "منفرج", "108", "فيثاغورس"],
+                explanation: "لا، فنظرية فيثاغورس تُطبق حصرياً على المثلثات قائمة الزاوية (90 درجة). البرج المائل يجعل الزاوية هنا 108 درجات."
+            },
+            {
+                question: "ماذا عن الدوال المثلثية البسيطة (sin, cos, tan)؟",
+                keywords: ["لا", "ليس قائم", "مباشرة", "لا يمكن", "خطأ"],
+                explanation: "حساب المثلثات الأساسي يعتمد على المقابل والمجاور والوتر في مثلث قائم. بما أن المثلث منفرج، لا يمكننا استخدامها مباشرة بدون تقسيم."
+            },
+            {
+                question: "إذاً، ما هو القانون الرياضي السحري لحل هذا المثلث المنفرج؟",
+                keywords: ["جيوب", "التمام", "cosines", "cos", "جتا"],
+                explanation: "ممتاز! قانون جيوب التمام (Law of Cosines) هو التعميم الأقوى لفيثاغورس، ويسمح لنا بإيجاد الضلع المجهول في أي مثلث مهما كانت زاويته!"
+            }
+        ];
+
+        let currentQuestion = 0;
+
+        function renderQuestion() {
+            const q = quizData[currentQuestion];
+            const container = document.getElementById('quiz-container');
+            const progress = document.getElementById('quiz-progress');
+            
+            progress.style.width = `${((currentQuestion) / quizData.length) * 100}%`;
+
+            let html = `
+                <div class="question-card show" style="transform: translateX(0); opacity: 1; border-right: none; box-shadow: none; margin:0; padding:10px;">
+                    <div class="q-badge">السؤال ${currentQuestion + 1} من ${quizData.length}</div>
+                    <p class="question-text">${q.question}</p>
+                    
+                    <textarea id="student-text-answer" class="student-answer" placeholder="اكتبي إجابتك هنا بأسلوبك..."></textarea>
+                    
+                    <button id="check-ans-btn" class="check-btn" onclick="checkKeywordAnswer()">تحقق من الإجابة ✔️</button>
+                    
+                    <div class="explanation" id="current-explanation" style="display: none; padding: 15px; margin-top: 15px;">
+                        <p id="correction-status" style="font-size: 1.1rem; font-weight: bold; margin-bottom: 10px;"></p>
+                        <p style="margin:0; line-height: 1.6;"><strong>💡 التفسير:</strong> ${q.explanation}</p>
+                        <button class="check-btn" style="background: var(--primary);" onclick="nextQuestion()">${currentQuestion === quizData.length - 1 ? 'إنهاء التحدي 🏆' : 'السؤال التالي ➡️'}</button>
+                    </div>
+                </div>
+            `;
+            container.innerHTML = html;
+            setTimeout(() => {
+                document.getElementById('student-text-answer').focus();
+            }, 100);
+        }
+
+        function checkKeywordAnswer() {
+            const q = quizData[currentQuestion];
+            const answer = document.getElementById('student-text-answer').value.trim().toLowerCase();
+            
+            if (!answer) {
+                const ta = document.getElementById('student-text-answer');
+                ta.style.animation = 'none';
+                void ta.offsetWidth; // trigger reflow
+                ta.style.animation = 'shake 0.5s';
+                return;
+            }
+
+            const isCorrect = q.keywords.some(kw => answer.includes(kw));
+            
+            document.getElementById('student-text-answer').disabled = true;
+            document.getElementById('check-ans-btn').style.display = 'none';
+            
+            const correctionStatus = document.getElementById('correction-status');
+            if (isCorrect) {
+                playCorrectSound();
+                correctionStatus.innerHTML = "رائع! إجابتك تتضمن الفكرة الصحيحة 🌟";
+                correctionStatus.style.color = "#28a745";
+            } else {
+                playWrongSound();
+                correctionStatus.innerHTML = "محاولة جيدة! دعينا نرى التفسير العلمي 👇";
+                correctionStatus.style.color = "#dc3545";
+            }
+            
+            document.getElementById('current-explanation').style.display = 'block';
+        }
+
+        function nextQuestion() {
+            if (currentQuestion < quizData.length - 1) {
+                currentQuestion++;
+                renderQuestion();
+            } else {
+                showFinalScreen();
+            }
+        }
+
+        function showFinalScreen() {
+            const container = document.getElementById('quiz-container');
+            const progress = document.getElementById('quiz-progress');
+            progress.style.width = '100%';
+            
+            container.innerHTML = `
+                <div class="final-screen">
+                    <div class="final-icon">🏆</div>
+                    <h2 class="modal-title" style="margin-top: 0;">تهانينا! 🎉</h2>
+                    <p class="final-text">لقد أثبتِّ كفاءتك في حل المشكلات الهندسية والتفكير النقدي.</p>
+                    <button class="view-scene-btn" onclick="hideModal()">عودة للمشهد 👁️</button>
+                </div>
+            `;
+            createConfetti();
+            playSuccessSound();
+        }
+
+        function playCorrectSound() {
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+            osc.frequency.setValueAtTime(1200, audioCtx.currentTime + 0.1);
+            gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.3);
+        }
+
+        function playWrongSound() {
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.3);
+            gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.3);
+        }
+
+        function createConfetti() {
+            const colors = ['#FF6B6B', '#4ECDC4', '#FFE66D', '#9B59B6', '#3498DB', '#FF9F43'];
+            for (let i = 0; i < 60; i++) {
+                const c = document.createElement('div');
+                c.classList.add('confetti');
+                c.style.left = Math.random() * 100 + 'vw';
+                c.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                c.style.width = c.style.height = (Math.random() * 8 + 6) + 'px';
+                c.style.animationDuration = (Math.random() * 2 + 2.5) + 's';
+                c.style.animationDelay = Math.random() * 0.5 + 's';
+                document.body.appendChild(c);
+                setTimeout(() => c.remove(), 5000);
+            }
+        }
+
+    </script>
+</body>
+</html>
